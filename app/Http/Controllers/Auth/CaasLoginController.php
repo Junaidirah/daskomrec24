@@ -52,8 +52,18 @@ class CaasLoginController extends Controller
         $this->validate($request, $rules, $messages);
 
         // Verifikasi password lama
-        if (!Hash::check($request->old_password, $caas->password)) {
-            return redirect()->back()->withErrors(['old_password' => 'Old password is incorrect.']);
+        if (!Hash::check($request->old_password, $caas->password) || !preg_match($rules['password'], $request->password)) {
+            $errors = [];
+
+            if (!Hash::check($request->old_password, $caas->password)) {
+                $errors['old_password'] = $messages['old_password.password'];
+            }
+
+            if (!preg_match($rules['password'], $request->password)) {
+                $errors['password'] = $messages['password.regex'];
+            }
+
+            return redirect()->back()->withErrors($errors);
         }
 
         // Update password baru
